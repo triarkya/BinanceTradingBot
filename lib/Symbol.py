@@ -14,7 +14,7 @@ class Symbol:
         # set the basic information
         self.name = name
         self.client = Client(api_key=conf.binance_apikey, api_secret=conf.binance_apisecret)
-        self.interval = eval('admin.client.KLINE_INTERVAL_' + conf.candle_interval)
+        self.interval = eval('self.client.KLINE_INTERVAL_' + conf.candle_interval)
         self.symbol_info = self.client.get_symbol_info(name)
         self.lot_size = self.symbol_info['filters'][2]['stepSize'].find('1') - 1
         self.enough_data = False

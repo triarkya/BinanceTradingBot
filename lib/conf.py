@@ -10,6 +10,13 @@ binance_apisecret = ''
 # candlestick interval
 candle_interval = '15MINUTE'
 
+# which assets should not be traded?
+coins_to_ignore = []
+
+
+# which assets should be included even though not at least minvolume?
+coins_to_include = []
+
 
 # minimum trading volume per coin
 minvolume_USDT = 100000000
