@@ -4,6 +4,8 @@
 
 - currently only for USDT as quote asset and market buy/sell only!
 
+[Register on Binance](https://www.binance.com/en/register?ref=23830900)
+
 ## Features
 
 - easy and fast configuration (edit conf.py)
@@ -16,16 +18,21 @@
 - run the Bot precisely at specific time (like Cronjob)
 - set custom strategy to enter and exit long position
     - use TA-Lib indicators (see all indicators on TA-Lib git)
+- keep a record of every executed trade (buy, sell, profit)
 - get telegram notification after every executed trade
  
 ## Used Libraries
 
-apscheduler: https://github.com/agronholm/apscheduler
+[apscheduler](https://github.com/agronholm/apscheduler)
 
-pandas: https://github.com/pandas-dev/pandas
+[pandas](https://github.com/pandas-dev/pandas)
 
-python-binance: https://github.com/sammchardy/python-binance
+[python-binance](https://github.com/sammchardy/python-binance)
 
-TA-Lib: https://github.com/mrjbq7/ta-lib
+[TA-Lib](https://github.com/mrjbq7/ta-lib)
 
-python-telegram-bot: https://github.com/python-telegram-bot/python-telegram-bot
+[python-telegram-bot](https://github.com/python-telegram-bot/python-telegram-bot)
+
+## Disclaimer
+
+I am not responsible for anything done with this trading bot. You use it at your own risk. There are no warranties or guarantees expressed or implied. You assume all responsibility and liability.
