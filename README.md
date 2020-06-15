@@ -3,14 +3,14 @@
 ## Note
 
 - currently only for USDT as quote asset and market buy/sell only!
-- current state of Bot not executable, still in progress
 
 ## Features
 
 - easy and fast configuration (edit conf.py)
     - Binance API keys
     - candlestick interval (15 minutes by default)
-    - set a minimum 24 trade volume (below will be ignored)
+    - set a minimum 24h trade volume (below will be ignored)
+    - which specific coins/pairs shoud be ignored or included?
     - how many percent of your total asset you want to invest per trade
     - the minimum amount to be invested per trade
 - run the Bot precisely at specific time (like Cronjob)
