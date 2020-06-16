@@ -20,12 +20,21 @@
     - use TA-Lib indicators (see all indicators on TA-Lib git)
 - keep a record of every executed trade (buy, sell, profit)
 - get telegram notification after every executed trade
+
+## Additional Indicators
+
+- Middle (average of High, Low, Open, Close)
+- VWMA (Volume Weighted Moving Average)
+- RVGI (Relative Vigor Index + RVGI Signal)
+- Supertrend
  
 ## Used Libraries
 
 [apscheduler](https://github.com/agronholm/apscheduler)
 
 [pandas](https://github.com/pandas-dev/pandas)
+
+[numpy](https://github.com/numpy/numpy)
 
 [python-binance](https://github.com/sammchardy/python-binance)
 
