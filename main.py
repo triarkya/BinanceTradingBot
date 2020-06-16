@@ -38,6 +38,7 @@ def session():
         ticker_df = ticker_df[~filter_ticker_df]
 
     trade_pairs = ticker_df['symbol'].tolist()
+    trade_pairs = [pair for pair in trade_pairs if pair[-4:] == 'USDT']
 
     for pair in conf.coins_to_include:
         if pair not in trade_pairs:

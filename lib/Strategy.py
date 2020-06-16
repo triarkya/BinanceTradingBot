@@ -10,10 +10,12 @@ class Strategy:
 
     # edit this method to set your strategy to enter a long trade
     def long_enter(self):
-        if self.symbol.df['close'] > self.symbol.df['open']:
-            return True
+        if self.symbol.df['close'].tolist()[-1] > self.symbol.df['open'].tolist()[-1]:
+            if 1 < 0:
+                return True
 
     # edit this method to set your strategy to exit a long trade
     def long_exit(self):
-        if self.symbol.df['di_neg'] >= 20 and self.symbol.df['adx'] >= 25:
-            return True
+        if self.symbol.df['di_neg'].tolist()[-1] >= 20 and self.symbol.df['adx'].tolist()[-1] >= 25:
+            if 1 < 0:
+                return True

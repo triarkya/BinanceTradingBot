@@ -2,6 +2,7 @@ import pandas as pd
 import lib.conf as conf
 from binance.client import Client
 from talib.abstract import *
+from lib.indicators import *
 
 
 # convert date to seconds and set every relevant non-float column to float
@@ -48,7 +49,9 @@ class Symbol:
         self.df["adx"] = ADX(inputs, timeperiod=14)
         self.df["di_neg"] = MINUS_DI(inputs, timeperiod=14)
         self.df["di_pos"] = PLUS_DI(inputs, timeperiod=14)
-        self.df["atr"] = ATR(inputs, timeperiod=14)
+        self.df["atr"] = ATR(inputs, timeperiod=10)
         self.df["chaikin_osc"] = ADOSC(inputs)
         self.df["ultimate_osc"] = ULTOSC(inputs)
         self.df = self.df.dropna()
+        self.df["supertrend"] = Supertrend(self.df, 2, 10)
+        self.df["rvgi"], self.df["rvgi_signal"] = RVGI(self.df, 10)
