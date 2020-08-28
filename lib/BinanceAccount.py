@@ -13,7 +13,8 @@ class BinanceAccount:
         self.value_per_trade = self.set_value_per_trade()
         self.current_quote_funds = self.return_balance(quote)
 
-    # keep a record of every trade (long positions)
+    # keep a record of every trade in trades.csv
+    # name;symbol;{price: qty};avg_price
     def trade_to_csv(self, symbol, price, quote_qty):
         lines = []
         try:
@@ -33,6 +34,7 @@ class BinanceAccount:
                     priceqty = eval(priceqty)
                     priceqty[price] = quote_qty
                     avg = 0
+
                     # price, balance
                     for p, b in priceqty.items():
                         # calculate weighted average buy price
@@ -62,7 +64,7 @@ class BinanceAccount:
         return float(self.client.get_asset_balance(asset=quote)['free'])
 
     # execute market buy order
-    def start_buy_order(self, symbol, latest_price, lot_filter):
+    def start_market_buy(self, symbol, latest_price, lot_filter):
         # only trade if enough funds!
         if self.current_quote_funds > self.value_per_trade:
             qty = round(self.value_per_trade / latest_price, lot_filter)
@@ -97,8 +99,9 @@ class BinanceAccount:
             )
 
     # execute market sell order
-    def start_sell_order(self, symbol, latest_price, lot_filter):
+    def start_market_sell(self, symbol, latest_price, lot_filter):
         symbol_balance = self.return_balance(quote=symbol[:-4])
+        # because lower order limit is 10 USDT
         if symbol_balance * latest_price > 11:
             priceqty_pair = 0
             qty = round(int(symbol_balance * (10 ** lot_filter)) / (10 ** lot_filter), lot_filter)
@@ -120,6 +123,7 @@ class BinanceAccount:
             tradesfile.writelines('\n'.join(lines))
             tradesfile.close()
 
+            # send telegram bot message
             sell_qty = float(sell['cummulativeQuoteQty'])
             buy_qty = sum(eval(priceqty_pair).values())
             profit = sell_qty - buy_qty
@@ -137,36 +141,36 @@ class BinanceAccount:
                 except:
                     print("Connection Error\n")
 
-                # note down all profits in separate file
-                sell_profit_file = open('executed_sell_trades.csv', 'r')
-                executed_trades = sell_profit_file.read().splitlines()
-                sell_profit_file.close()
-                executed_trades.append(','.join(
-                    [
-                        self.name,
-                        str(sell['transactTime']),
-                        str(buy_qty),
-                        str(sell_qty),
-                        str(((sell_qty / buy_qty) - 1) * 100),
-                        str(sell_qty - buy_qty)
-                    ]
-                ))
-                sell_profit_file = open('executed_sell_trades.csv', 'w')
-                sell_profit_file.write('\n'.join(executed_trades))
-                sell_profit_file.close()
+            # note down all new profits in executed_sell_trades.csv
+            sell_profit_file = open('executed_sell_trades.csv', 'r')
+            executed_trades = sell_profit_file.read().splitlines()
+            sell_profit_file.close()
+            executed_trades.append(','.join(
+                [
+                    self.name,
+                    str(sell['transactTime']),
+                    str(buy_qty),
+                    str(sell_qty),
+                    str(((sell_qty / buy_qty) - 1) * 100),
+                    str(sell_qty - buy_qty)
+                ]
+            ))
+            sell_profit_file = open('executed_sell_trades.csv', 'w')
+            sell_profit_file.write('\n'.join(executed_trades))
+            sell_profit_file.close()
 
-                # update profits for account
-                profit_file = open('profit.csv', 'r')
-                all_profits = profit_file.read().splitlines()
-                profit_file.close()
-                for profit_line in all_profits:
-                    name, full_profit = profit_line.rstrip().split(',')
-                    if name == self.name:
-                        all_profits.remove(profit_line)
-                        full_profit = float(full_profit)
-                        full_profit += profit
-                        all_profits.append(','.join([name, str(full_profit)]))
-                        profit_file = open('profit.csv', 'w')
-                        profit_file.write('\n'.join(all_profits))
-                        profit_file.close()
-                        break
+            # update profit.csv for account
+            profit_file = open('profit.csv', 'r')
+            all_profits = profit_file.read().splitlines()
+            profit_file.close()
+            for profit_line in all_profits:
+                name, full_profit = profit_line.rstrip().split(',')
+                if name == self.name:
+                    all_profits.remove(profit_line)
+                    full_profit = float(full_profit)
+                    full_profit += profit
+                    all_profits.append(','.join([name, str(full_profit)]))
+                    profit_file = open('profit.csv', 'w')
+                    profit_file.write('\n'.join(all_profits))
+                    profit_file.close()
+                    break

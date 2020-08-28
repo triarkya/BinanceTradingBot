@@ -6,7 +6,7 @@ class Strategy:
         self.symbol = Symbol(symbol)
         self.is_hot_buy = self.long_enter()
         self.is_hot_sell = self.long_exit()
-        self.checkable = self.symbol.enough_data
+        self.enough_data = self.symbol.enough_data
 
     # edit this method to set your strategy to enter a long trade
     def long_enter(self):

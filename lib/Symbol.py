@@ -14,14 +14,21 @@ class Symbol:
     def __init__(self, name='BTCUSDT'):
         # set the basic information
         self.name = name
-        self.client = Client(api_key=conf.binance_apikey, api_secret=conf.binance_apisecret)
+        self.client = Client(
+            api_key=conf.binance_apikey,
+            api_secret=conf.binance_apisecret
+        )
         self.interval = eval('self.client.KLINE_INTERVAL_' + conf.candle_interval)
         self.symbol_info = self.client.get_symbol_info(name)
         self.lot_size = self.symbol_info['filters'][2]['stepSize'].find('1') - 1
         self.enough_data = False
 
         # get all relevant columns as candle_df_raw
-        candles_get = self.client.get_historical_klines(self.name, self.interval, "8 days ago UTC")
+        candles_get = self.client.get_historical_klines(
+            self.name,
+            self.interval,
+            "8 days ago UTC"
+        )
         candles_data = [only_numlist(candle) for candle in candles_get]
         candles_df_raw = pd.DataFrame(candles_data)
         candles_df_raw.columns = ["date", "open", "high", "low", "close", "volume"]
@@ -38,7 +45,7 @@ class Symbol:
             'volume': self.df['volume'],
         }
 
-        # upper-case indicators from ta-lib
+        # uppercase indicators are from ta-lib
         self.df["middle"] = (self.df["high"] + self.df["low"] + self.df["close"] + self.df["open"]) / 4
         self.df["ema_25"] = EMA(inputs, timeperiod=25)
         self.df["wma_50"] = WMA(inputs, timeperiod=50)
