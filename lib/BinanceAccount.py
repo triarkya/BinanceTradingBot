@@ -33,6 +33,7 @@ class BinanceAccount:
                     priceqty = eval(priceqty)
                     priceqty[price] = quote_qty
                     avg = 0
+
                     # price, balance
                     for p, b in priceqty.items():
                         # calculate weighted average buy price
@@ -62,7 +63,7 @@ class BinanceAccount:
         return float(self.client.get_asset_balance(asset=quote)['free'])
 
     # execute market buy order
-    def start_buy_order(self, symbol, latest_price, lot_filter):
+    def start_market_buy(self, symbol, latest_price, lot_filter):
         # only trade if enough funds!
         if self.current_quote_funds > self.value_per_trade:
             qty = round(self.value_per_trade / latest_price, lot_filter)
@@ -97,7 +98,7 @@ class BinanceAccount:
             )
 
     # execute market sell order
-    def start_sell_order(self, symbol, latest_price, lot_filter):
+    def start_market_sell(self, symbol, latest_price, lot_filter):
         symbol_balance = self.return_balance(quote=symbol[:-4])
         if symbol_balance * latest_price > 11:
             priceqty_pair = 0
