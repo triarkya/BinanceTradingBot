@@ -15,10 +15,24 @@
     - which specific coins/pairs shoud be ignored or included?
     - how many percent of your total asset you want to invest per trade
     - the minimum amount to be invested per trade
-- run the Bot precisely at specific time (like Cronjob)
+
+- run the bot precisely at specific time (like Cronjob)
+
 - set custom strategy to enter and exit long position
     - use TA-Lib indicators (see all indicators on TA-Lib git)
+    - use custom indicators (just modify indicators.py :])
+    - to use an indicator, add your indicator to the add_indicators method in lib/Symbol.py
 - keep a record of every executed trade (buy, sell, profit)
+    
+    ***trades.csv***:
+    > name;symbol;{price: qty};avg_price
+    
+    ***executed\_sell\_trades.csv***:
+    > name,time,buy\_qty,sell\_qty,percent\_profit,stable\_profit
+    
+    ***profit.csv***:
+    > name,profit
+    
 - get telegram notification after every executed trade
 
 ## Additional Indicators

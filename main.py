@@ -85,7 +85,7 @@ def session():
             buy_signals.append(pair)
             buy_dict[pair] = signal
 
-    buy_list = [(val.checkable, key, val.currency.lot_size) for key, val in buy_dict.items()]
+    buy_list = [(val.enough_data, key, val.currency.lot_size) for key, val in buy_dict.items()]
 
     # execute buy orders
     for buy_signal in buy_list:
