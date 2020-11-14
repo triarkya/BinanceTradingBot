@@ -24,15 +24,15 @@ def session():
     for pair_price in client.get_all_tickers():
         symbol_prices[pair_price['symbol']] = float(pair_price['price'])
 
-    # only pairs with USDT
+    #################################################################
+    # -> only pairs with USDT
+    # -> only pairs with volume > minimal volume of interest to trade
+    # -> only pairs not containing other quote asset than USDT
+    #################################################################
     filter_ticker_df = ticker_df['symbol'].str.contains('USDT')
     ticker_df = ticker_df[filter_ticker_df]
-
-    # only pairs with volume > minimal volume of interest to trade
     filter_ticker_df = ticker_df['quoteVolume'].astype(float) > conf.minvolume_USDT
     ticker_df = ticker_df[filter_ticker_df]
-
-    # only pairs not containing other quote asset than USDT
     ignore_coins = ['USDC', 'PAX', 'BUSD', 'TUSD', 'USDS', 'BNB', 'MTL'] + conf.coins_to_ignore
     for coin in ignore_coins:
         filter_ticker_df = ticker_df['symbol'].str.contains(coin)
@@ -45,26 +45,28 @@ def session():
         if pair not in trade_pairs:
             trade_pairs.append(pair)
 
-    # for the Charts generator
-    currencies = {}
-
     #################################################
     # check if any pair meets conditions to be traded
     #################################################
 
-    sell_signals = []
-    buy_signals = []
+    sell_signals = []   # list of pairs to sell (e.g. ["BTCUSDT", ...]
+    buy_signals = []    # list of pairs to buy (e.g. ["BTCUSDT", ...]
+    currencies = {}     # for the Charts generator
 
     buy_dict = {}
     for pair in trade_pairs:
         if any([ignore in pair for ignore in ignore_coins]):
             continue
 
-        # check pair in strategy
+        #########################################################
+        # run checks and execute sell order if conditions are met
+        #########################################################
+
+        # check pair in buy/sell strategy
         signal = Strategy(pair)
         currencies[pair] = signal.symbol
 
-        # run checks and execute sell order if conditions are met
+        # close open position if criteria are met
         if signal.is_hot_sell:
             sell_signals.append(pair)
             try:
@@ -80,14 +82,15 @@ def session():
             except BinanceAPIException as e:
                 print(e.message)
 
-        # run checks and execute buy order if met criteria
+        # save every pair to buy after all possible open positions are closed
         if signal.is_hot_buy:
             buy_signals.append(pair)
             buy_dict[pair] = signal
 
+    ########################################################
+    # run checks and execute buy order if conditions are met
+    ########################################################
     buy_list = [(val.enough_data, key, val.currency.lot_size) for key, val in buy_dict.items()]
-
-    # execute buy orders
     for buy_signal in buy_list:
         try:
             binance_account = BinanceAccount(
@@ -101,6 +104,7 @@ def session():
                 'USDT' in tck_usdt['symbol'] and not float(tck_usdt['bidPrice']) == 0
             ]
 
+            # open new positions only if bid price and ask price differ less than 0.4%
             for ticker in tickers_usdt:
                 if ticker['symbol'] == buy_signal[1]:
                     diff = (float(ticker['askPrice']) / float(ticker['bidPrice']) - 1) * 100

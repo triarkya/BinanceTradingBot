@@ -7,9 +7,12 @@ import lib.conf as conf
 class BinanceAccount:
     def __init__(self, quote='USDT'):
         self.name = conf.name
-        self.client = Client(api_key=conf.binance_apikey, api_secret=conf.binance_apisecret)
+        self.client = Client(
+            api_key=conf.binance_apikey,
+            api_secret=conf.binance_apisecret
+        )
         self.quote = quote
-        self.quote_funds = 300 if quote == 'USDT' else 0.05  # method to get the data will be added later
+        self.quote_funds = conf.totalasset_USDT if quote == 'USDT' else conf.totalasset_BTC
         self.value_per_trade = self.set_value_per_trade()
         self.current_quote_funds = self.return_balance(quote)
 
@@ -17,18 +20,25 @@ class BinanceAccount:
     # name;symbol;{price: qty};avg_price
     def trade_to_csv(self, symbol, price, quote_qty):
         lines = []
+        # open trades.csv
         try:
-            trades_file = open('trades.csv', 'r')
+            trades_file = open('results/trades.csv', 'r')
             lines = trades_file.read().splitlines()
             trades_file.close()
         except FileNotFoundError:
             print("no trades.csv found")
 
+        # is there already an open position for the current symbol (e.g. BTCUSDT)?
         symbol_in_trades = False
+
+        # only execute if there are any entries
         if len(lines) > 0:
             for line in lines:
                 name, pair, priceqty, avg = line.rstrip().split(';')
+
+                # symbol already in open positions
                 if pair == symbol and name == self.name:
+                    # update the data for the current symbol
                     symbol_in_trades = True
                     lines.remove(line)
                     priceqty = eval(priceqty)
@@ -37,41 +47,48 @@ class BinanceAccount:
 
                     # price, balance
                     for p, b in priceqty.items():
-                        # calculate weighted average buy price
+                        # calculate average buy price weighted by volume
                         avg += p * b / sum(priceqty.values())
                     new_line = ';'.join([self.name, pair, str(priceqty), str(avg)])
                     lines.append(new_line)
                     break
 
+            # add new open position entry for current symbol
             if not symbol_in_trades:
                 new_line = ';'.join([self.name, symbol, str({price: quote_qty}), str(price)])
                 lines.append(new_line)
 
+        # no open positions yet
         else:
             lines = [';'.join([self.name, symbol, str({price: quote_qty}), str(price)])]
-        new_trades_file = open('trades.csv', 'w')
+
+        # write all open positions to trades.csv
+        new_trades_file = open('results/trades.csv', 'w')
         new_trades_file.write('\n'.join(lines))
         new_trades_file.close()
 
     # calculates the quote asset value per executed trade
     def set_value_per_trade(self):
+        # check if there are enough quote asset funds to open a new position by percentage
         if self.quote_funds * conf.perc_per_trade >= eval(f'conf.minvalue_{self.quote}'):
             return self.quote_funds * conf.perc_per_trade
+        # if not enough funds, just use the quote asset minvalue set
         return eval(f'conf.minvalue_{self.quote}')
 
-    # returns the total quote asset balance (for example USDT)
+    # returns the total available quote asset balance (for example USDT)
     def return_balance(self, quote):
         return float(self.client.get_asset_balance(asset=quote)['free'])
 
     # execute market buy order
     def start_market_buy(self, symbol, latest_price, lot_filter):
-        # only trade if enough funds!
+        # trade only executes if enough quote asset funds available!
         if self.current_quote_funds > self.value_per_trade:
             qty = round(self.value_per_trade / latest_price, lot_filter)
             buy = self.client.order_market_buy(
                 symbol=symbol,
                 quantity=qty
             )
+            # send telegram notification if set
             if conf.notify_telegram:
                 message = self.name + ' bought #' + symbol
                 tgb = telegram.Bot(token=conf.tgbot_apikey)
@@ -82,10 +99,13 @@ class BinanceAccount:
                         parse_mode='Markdown',
                         disable_web_page_preview=True
                     )
+                # any more elegant possibility to catch all network related errors?
                 except:
                     print("Connection Error\n")
 
             time.sleep(0.2)
+
+            # update the open positions (trades.csv)
             print(self.name, 'bought', qty, symbol)
             quote_qty = float(buy['cummulativeQuoteQty'])
             asset_qty = float(buy['executedQty'])
@@ -100,7 +120,7 @@ class BinanceAccount:
 
     # execute market sell order
     def start_market_sell(self, symbol, latest_price, lot_filter):
-        symbol_balance = self.return_balance(quote=symbol[:-4])
+        symbol_balance = self.return_balance(quote=self.quote)
         # because lower order limit is 10 USDT
         if symbol_balance * latest_price > 11:
             priceqty_pair = 0
@@ -110,8 +130,8 @@ class BinanceAccount:
                 quantity=qty
             )
 
-            # update trades.csv
-            tradesfile = open('trades.csv', 'r')
+            # remove closed positions from trades.csv
+            tradesfile = open('results/trades.csv', 'r')
             lines = tradesfile.read().splitlines()
             tradesfile.close()
             for line in lines:
@@ -119,16 +139,18 @@ class BinanceAccount:
                 if pair == symbol and name == self.name:
                     lines.remove(line)
                     break
-            tradesfile = open('trades.csv', 'w')
+            tradesfile = open('results/trades.csv', 'w')
             tradesfile.writelines('\n'.join(lines))
             tradesfile.close()
 
-            # send telegram bot message
+            # verbose output
             sell_qty = float(sell['cummulativeQuoteQty'])
             buy_qty = sum(eval(priceqty_pair).values())
             profit = sell_qty - buy_qty
             message = self.name + ' sold #' + str(sell_qty) + " " + symbol
             print(message)
+
+            # send telegram notification if set
             if conf.notify_telegram:
                 tgb = telegram.Bot(token=conf.bot_apikey)
                 try:
@@ -142,7 +164,7 @@ class BinanceAccount:
                     print("Connection Error\n")
 
             # note down all new profits in executed_sell_trades.csv
-            sell_profit_file = open('executed_sell_trades.csv', 'r')
+            sell_profit_file = open('results/executed_sell_trades.csv', 'r')
             executed_trades = sell_profit_file.read().splitlines()
             sell_profit_file.close()
             executed_trades.append(','.join(
@@ -155,12 +177,12 @@ class BinanceAccount:
                     str(sell_qty - buy_qty)
                 ]
             ))
-            sell_profit_file = open('executed_sell_trades.csv', 'w')
+            sell_profit_file = open('results/executed_sell_trades.csv', 'w')
             sell_profit_file.write('\n'.join(executed_trades))
             sell_profit_file.close()
 
             # update profit.csv for account
-            profit_file = open('profit.csv', 'r')
+            profit_file = open('results/profit.csv', 'r')
             all_profits = profit_file.read().splitlines()
             profit_file.close()
             for profit_line in all_profits:
@@ -170,7 +192,7 @@ class BinanceAccount:
                     full_profit = float(full_profit)
                     full_profit += profit
                     all_profits.append(','.join([name, str(full_profit)]))
-                    profit_file = open('profit.csv', 'w')
+                    profit_file = open('results/profit.csv', 'w')
                     profit_file.write('\n'.join(all_profits))
                     profit_file.close()
                     break

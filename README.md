@@ -1,20 +1,29 @@
 # BinanceTradingBot
 
-## Note
-
-- currently only for USDT as quote asset and market buy/sell only!
+#### (Note: currently only for USDT as quote asset and market buy/sell only!)
 
 [Register on Binance](https://www.binance.com/en/register?ref=23830900)
 
 ## Features
 
-- easy and fast configuration (edit conf.py)
-    - Binance API keys
-    - candlestick interval (15 minutes by default)
-    - set a minimum 24h trade volume (below will be ignored)
-    - which specific coins/pairs shoud be ignored or included?
-    - how many percent of your total asset you want to invest per trade
-    - the minimum amount to be invested per trade
+- easy and fast configuration (edit lib/conf.py) (Note: usage of BTC as quote asset not implemented yet)
+
+	|attribute in conf.py| desription |
+	---------------------|------------|
+	| binance\_apikey/ binance\_apisecret | Binance API keys |
+	| candle\_interval | candlestick interval (15 minutes by default) |
+	| coins\_to\_ignore | list of symbols to ignore (e.g. "BTCUSDT") |
+	| coins\_to\_include | list of symbols to trade even though maybe not enough volume |
+	| minvolume\_USDT | minimum trading volume for symbols with USDT as quote asset |
+	| minvolume\_BTC | minimum trading volume for symbols with BTC as quote asset |
+	| totalasset\_USDT | how much USDT you have to use as quote asset |
+	| totalasset\_BTC | how much BTC you have to use as quote asset |
+	| perc\_per\_trade | how many percent of your quote asset you want to invest per trade? (Note: 0.09 = 9%) |
+	| minvalue\_USDT | how much of USDT should be invested per trade even though there is not enough available USDT in percentage terms? |
+	| minvalue\_BTC | how much of BTC should be invested per trade even though there is not enough available BTC in percentage terms? |
+	| notify\_telegram | set this to true if you want to be notified after buy/sell |
+	| tgbot\_apikey | Telegram API key ([BotFather TelegramBot](https://t.me/BotFather)) |
+	| tgchat_id | the chat id of the Telegram chat which gets the notifications
 
 - run the bot precisely at specific time (like Cronjob)
 
@@ -24,16 +33,16 @@
     - to use an indicator, add your indicator to the add_indicators method in lib/Symbol.py
 - keep a record of every executed trade (buy, sell, profit)
     
-    ***trades.csv***:
+    ***results/trades.csv***:
     > name;symbol;{price: qty};avg_price
     
-    ***executed\_sell\_trades.csv***:
+    ***results/executed\_sell\_trades.csv***:
     > name,time,buy\_qty,sell\_qty,percent\_profit,stable\_profit
     
-    ***profit.csv***:
+    ***results/profit.csv***:
     > name,profit
     
-- get telegram notification after every executed trade
+- get Telegram notification after every executed trade
 
 ## Additional Indicators
 
