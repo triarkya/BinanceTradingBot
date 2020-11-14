@@ -4,6 +4,9 @@ from binance.client import Client
 from talib.abstract import *
 from lib.indicators import *
 
+# suppress unnecessary SettingWithCopyWarning in pandas
+pd.options.mode.chained_assignment = None
+
 
 # convert date to seconds and set every relevant non-float column to float
 def only_numlist(candle_elem):
@@ -23,7 +26,7 @@ class Symbol:
         self.lot_size = self.symbol_info['filters'][2]['stepSize'].find('1') - 1
         self.enough_data = False
 
-        # get all relevant columns as candle_df_raw
+        # get all relevant columns as candle_df_raw and save in self.df
         candles_get = self.client.get_historical_klines(
             self.name,
             self.interval,
