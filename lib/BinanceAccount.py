@@ -22,7 +22,7 @@ class BinanceAccount:
         lines = []
         # open trades.csv
         try:
-            trades_file = open('trades.csv', 'r')
+            trades_file = open('results/trades.csv', 'r')
             lines = trades_file.read().splitlines()
             trades_file.close()
         except FileNotFoundError:
@@ -63,7 +63,7 @@ class BinanceAccount:
             lines = [';'.join([self.name, symbol, str({price: quote_qty}), str(price)])]
 
         # write all open positions to trades.csv
-        new_trades_file = open('trades.csv', 'w')
+        new_trades_file = open('results/trades.csv', 'w')
         new_trades_file.write('\n'.join(lines))
         new_trades_file.close()
 
@@ -131,7 +131,7 @@ class BinanceAccount:
             )
 
             # remove closed positions from trades.csv
-            tradesfile = open('trades.csv', 'r')
+            tradesfile = open('results/trades.csv', 'r')
             lines = tradesfile.read().splitlines()
             tradesfile.close()
             for line in lines:
@@ -139,7 +139,7 @@ class BinanceAccount:
                 if pair == symbol and name == self.name:
                     lines.remove(line)
                     break
-            tradesfile = open('trades.csv', 'w')
+            tradesfile = open('results/trades.csv', 'w')
             tradesfile.writelines('\n'.join(lines))
             tradesfile.close()
 
@@ -164,7 +164,7 @@ class BinanceAccount:
                     print("Connection Error\n")
 
             # note down all new profits in executed_sell_trades.csv
-            sell_profit_file = open('executed_sell_trades.csv', 'r')
+            sell_profit_file = open('results/executed_sell_trades.csv', 'r')
             executed_trades = sell_profit_file.read().splitlines()
             sell_profit_file.close()
             executed_trades.append(','.join(
@@ -177,12 +177,12 @@ class BinanceAccount:
                     str(sell_qty - buy_qty)
                 ]
             ))
-            sell_profit_file = open('executed_sell_trades.csv', 'w')
+            sell_profit_file = open('results/executed_sell_trades.csv', 'w')
             sell_profit_file.write('\n'.join(executed_trades))
             sell_profit_file.close()
 
             # update profit.csv for account
-            profit_file = open('profit.csv', 'r')
+            profit_file = open('results/profit.csv', 'r')
             all_profits = profit_file.read().splitlines()
             profit_file.close()
             for profit_line in all_profits:
@@ -192,7 +192,7 @@ class BinanceAccount:
                     full_profit = float(full_profit)
                     full_profit += profit
                     all_profits.append(','.join([name, str(full_profit)]))
-                    profit_file = open('profit.csv', 'w')
+                    profit_file = open('results/profit.csv', 'w')
                     profit_file.write('\n'.join(all_profits))
                     profit_file.close()
                     break
