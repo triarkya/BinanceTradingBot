@@ -1,18 +1,26 @@
 from binance.client import Client
 import time
 import telegram
-import lib.conf as conf
+import json
+
+
+with open("lib/settings.json", "r") as settings_json:
+    settings = json.load(settings_json)
+    account_settings = settings["BinanceSettings"]["Account"]
+    filter_settings = settings["BinanceSettings"]["Filter"]
+    trade_parameters = settings["BinanceSettings"]["TradeParameters"]
+    notification_settings = settings["NotificationSettings"]["Telegram"]
 
 
 class BinanceAccount:
     def __init__(self, quote='USDT'):
-        self.name = conf.name
+        self.name = account_settings["Name"]
         self.client = Client(
-            api_key=conf.binance_apikey,
-            api_secret=conf.binance_apisecret
+            api_key=account_settings["API_Key"],
+            api_secret=account_settings["API_Secret"]
         )
         self.quote = quote
-        self.quote_funds = conf.totalasset_USDT if quote == 'USDT' else conf.totalasset_BTC
+        self.quote_funds = account_settings[f"Total_{self.quote}"]
         self.value_per_trade = self.set_value_per_trade()
         self.current_quote_funds = self.return_balance(quote)
 
@@ -70,10 +78,10 @@ class BinanceAccount:
     # calculates the quote asset value per executed trade
     def set_value_per_trade(self):
         # check if there are enough quote asset funds to open a new position by percentage
-        if self.quote_funds * conf.perc_per_trade >= eval(f'conf.minvalue_{self.quote}'):
-            return self.quote_funds * conf.perc_per_trade
+        if self.quote_funds * trade_parameters["Percent_per_Trade"] >= trade_parameters[f"MinValue_{self.quote}"]:
+            return self.quote_funds * trade_parameters["Percent_per_Trade"]
         # if not enough funds, just use the quote asset minvalue set
-        return eval(f'conf.minvalue_{self.quote}')
+        return trade_parameters[f"MinValue_{self.quote}"]
 
     # returns the total available quote asset balance (for example USDT)
     def return_balance(self, quote):
@@ -89,15 +97,14 @@ class BinanceAccount:
                 quantity=qty
             )
             # send telegram notification if set
-            if conf.notify_telegram:
+            if notification_settings["Get_Notification"]:
                 message = self.name + ' bought #' + symbol
-                tgb = telegram.Bot(token=conf.tgbot_apikey)
+                tgb = telegram.Bot(token=notification_settings["Bot_API_Key"])
                 try:
                     tgb.send_message(
-                        conf.tgchat_id,
+                        notification_settings["Chat_ID"],
                         message,
-                        parse_mode='Markdown',
-                        disable_web_page_preview=True
+                        parse_mode='Markdown'
                     )
                 # any more elegant possibility to catch all network related errors?
                 except:
@@ -151,14 +158,13 @@ class BinanceAccount:
             print(message)
 
             # send telegram notification if set
-            if conf.notify_telegram:
-                tgb = telegram.Bot(token=conf.bot_apikey)
+            if notification_settings["Get_Notification"]:
+                tgb = telegram.Bot(token=notification_settings["Bot_API_Key"])
                 try:
                     tgb.send_message(
-                        conf.tgchat_id,
+                        notification_settings["Chat_ID"],
                         message,
-                        parse_mode='Markdown',
-                        disable_web_page_preview=True
+                        parse_mode='Markdown'
                     )
                 except:
                     print("Connection Error\n")

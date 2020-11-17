@@ -5,14 +5,19 @@ from binance.exceptions import BinanceAPIException
 from apscheduler.schedulers.blocking import BlockingScheduler
 from lib.BinanceAccount import BinanceAccount
 from lib.Strategy import Strategy
-import lib.conf as conf
+import json
 
 
 def session():
+    with open("lib/settings.json", "r") as settings_json:
+        settings = json.load(settings_json)
+        account_settings = settings["BinanceSettings"]["Account"]
+        filter_settings = settings["BinanceSettings"]["Filter"]
+
     print(datetime.now().strftime("%d-%m-%Y %H:%M:%S,%f"))
     client = Client(
-        api_key=conf.binance_apikey,
-        api_secret=conf.binance_apisecret
+        api_key=account_settings["API_Key"],
+        api_secret=account_settings["API_Secret"]
     )
 
     #######################################
@@ -31,9 +36,9 @@ def session():
     #################################################################
     filter_ticker_df = ticker_df['symbol'].str.contains('USDT')
     ticker_df = ticker_df[filter_ticker_df]
-    filter_ticker_df = ticker_df['quoteVolume'].astype(float) > conf.minvolume_USDT
+    filter_ticker_df = ticker_df['quoteVolume'].astype(float) > filter_settings["Min_Volume_USDT"]
     ticker_df = ticker_df[filter_ticker_df]
-    ignore_coins = ['USDC', 'PAX', 'BUSD', 'TUSD', 'USDS', 'BNB', 'MTL'] + conf.coins_to_ignore
+    ignore_coins = ['USDC', 'PAX', 'BUSD', 'TUSD', 'USDS', 'BNB', 'MTL'] + filter_settings["Coins_to_ignore"]
     for coin in ignore_coins:
         filter_ticker_df = ticker_df['symbol'].str.contains(coin)
         ticker_df = ticker_df[~filter_ticker_df]
@@ -41,7 +46,7 @@ def session():
     # all pairs to examine
     trade_pairs = ticker_df['symbol'].tolist()
     trade_pairs = [pair for pair in trade_pairs if pair[-4:] == 'USDT']
-    for pair in conf.coins_to_include:
+    for pair in filter_settings["Coins_to_include"]:
         if pair not in trade_pairs:
             trade_pairs.append(pair)
 
@@ -71,8 +76,8 @@ def session():
             sell_signals.append(pair)
             try:
                 binance_account = BinanceAccount(
-                    conf.binance_apikey,
-                    conf.binance_apisecret
+                    account_settings["API_Key"],
+                    account_settings["API_Secret"]
                 )
                 binance_account.start_market_sell(
                     symbol=pair,
@@ -94,8 +99,8 @@ def session():
     for buy_signal in buy_list:
         try:
             binance_account = BinanceAccount(
-                conf.binance_apikey,
-                conf.binance_apisecret
+                account_settings["API_Key"],
+                account_settings["API_Secret"]
             )
             tickers_raw = binance_account.client.get_orderbook_tickers()
 
