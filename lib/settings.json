@@ -1,0 +1,35 @@
+{
+  "BinanceSettings": {
+
+    "Account": {
+      "Name": "admin",
+      "Total_USDT": 300,
+      "API_Key": "",
+      "API_Secret": ""
+    },
+
+    "Exchange": {
+      "Candle_Interval": "15MINUTE"
+    },
+
+    "Filter": {
+      "Coins_to_ignore": [],
+      "Coins_to_include": [],
+      "Min_Volume_USDT": 100000000
+    },
+
+    "TradeParameters": {
+      "Percent_per_Trade": 0.09,
+      "MinValue_USDT": 14
+    }
+  },
+
+  "NotificationSettings": {
+
+    "Telegram": {
+      "Get_Notification": false,
+      "Bot_API_Key": "",
+      "Chat_ID": "0"
+    }
+  }
+}

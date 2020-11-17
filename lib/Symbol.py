@@ -1,11 +1,16 @@
 import pandas as pd
-import lib.conf as conf
 from binance.client import Client
 from talib.abstract import *
 from lib.indicators import *
+import json
 
 # suppress unnecessary SettingWithCopyWarning in pandas
 pd.options.mode.chained_assignment = None
+
+with open("lib/settings.json", "r") as settings_json:
+    settings = json.load(settings_json)
+    account_settings = settings["BinanceSettings"]["Account"]
+    exchange_settings = settings["BinanceSettings"]["Exchange"]
 
 
 # convert date to seconds and set every relevant non-float column to float
@@ -18,10 +23,10 @@ class Symbol:
         # set the basic information
         self.name = name
         self.client = Client(
-            api_key=conf.binance_apikey,
-            api_secret=conf.binance_apisecret
+            api_key=account_settings["API_Key"],
+            api_secret=account_settings["API_Secret"]
         )
-        self.interval = eval('self.client.KLINE_INTERVAL_' + conf.candle_interval)
+        self.interval = eval('self.client.KLINE_INTERVAL_' + exchange_settings["Candle_Interval"])
         self.symbol_info = self.client.get_symbol_info(name)
         self.lot_size = self.symbol_info['filters'][2]['stepSize'].find('1') - 1
         self.enough_data = False
