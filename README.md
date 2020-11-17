@@ -6,25 +6,6 @@
 
 ## Features
 
-- easy and fast configuration (edit lib/conf.py) (Note: usage of BTC as quote asset not implemented yet)
-
-	|attribute in conf.py| desription |
-	---------------------|------------|
-	| binance\_apikey/ binance\_apisecret | Binance API keys |
-	| candle\_interval | candlestick interval (15 minutes by default) |
-	| coins\_to\_ignore | list of symbols to ignore (e.g. "BTCUSDT") |
-	| coins\_to\_include | list of symbols to trade even though maybe not enough volume |
-	| minvolume\_USDT | minimum trading volume for symbols with USDT as quote asset |
-	| minvolume\_BTC | minimum trading volume for symbols with BTC as quote asset |
-	| totalasset\_USDT | how much USDT you have to use as quote asset |
-	| totalasset\_BTC | how much BTC you have to use as quote asset |
-	| perc\_per\_trade | how many percent of your quote asset you want to invest per trade? (Note: 0.09 = 9%) |
-	| minvalue\_USDT | how much of USDT should be invested per trade even though there is not enough available USDT in percentage terms? |
-	| minvalue\_BTC | how much of BTC should be invested per trade even though there is not enough available BTC in percentage terms? |
-	| notify\_telegram | set this to true if you want to be notified after buy/sell |
-	| tgbot\_apikey | Telegram API key ([BotFather TelegramBot](https://t.me/BotFather)) |
-	| tgchat_id | the chat id of the Telegram chat which gets the notifications
-
 - run the bot precisely at specific time (like Cronjob)
 
 - set custom strategy to enter and exit long position
@@ -43,6 +24,68 @@
     > name,profit
     
 - get Telegram notification after every executed trade
+
+## Configuration 
+
+- easy and fast configuration (edit lib/settings.json) 
+- (Note: usage of BTC as quote asset not implemented yet)
+	
+	### BinanceSettings
+	
+	`BinanceSettings` properties
+	
+	|property name| desription |
+	|---------------------|------------|
+	| Account | settings to use your Binance account |
+	| Exchange | settings for candle interval etc. |
+	| Filter | settings to filter the ticker data |
+	| TradeParameters | parameters how risky you want to trade | 
+	
+	#### `BinanceSettings.Account`
+	
+	settings to use your Binance account
+	
+	- **Name**: your name ("admin" per default)
+	- **Total\_USDT**: how much USDT you have to use as quote asset
+	- **API\_Key**: your Binance API Key
+	- **API\_Secret**: your Binance API Secret
+
+	#### `BinanceSettings.Exchange`
+	
+	settings for candle interval etc.
+	
+	- **Candle\_Interval**: the candle interval for the historical klines ("15MINUTE" per default)
+
+	#### `BinanceSettings.Filter`
+	
+	settings to filter the ticker data
+	
+	- **Coins\_to\_ignore**: list of symbols to ignore (e.g. "BTCUSDT")
+	- **Coins\_to\_include**: list of symbols to trade even though maybe not enough volume
+	- **Min\_Volume\_USDT**: minimum trading volume for symbols with USDT as quote asset
+
+	#### `BinanceSettings.TradeParameters`
+	
+	parameters how risky you want to trade
+	
+	- **Percent\_per\_Trade**: how many percent of your quote asset you want to invest per trade? (Note: 0.09 = 9%)
+	- **MinValue\_USDT**: how much of USDT should be invested per trade even though there is not enough available USDT in percentage terms? 
+	
+	### NotificationSettings
+	
+	`NotificationSettings` properties
+	
+	|property name| desription |
+	|---------------------|------------|
+	| Telegram | settings to get notifications in Telegram|
+	
+	#### `NotificationSettings.Telegram`
+	
+	settings to get notifications in Telegram
+	
+	- **Get\_Notification**: set this to true if you want to be notified after buy/sell
+	- **Bot\_API\_Key**: Telegram Bot API key ([BotFather TelegramBot](https://t.me/BotFather))
+	- **Chat\_ID**: the chat ID of the Telegram chat which gets the notifications
 
 ## Additional Indicators
 
